@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to the Leaderboard</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script>
+        async function fetchUserInfo() {
+            try {
+                const response = await fetch('/user-info', { credentials: 'include' });
+                if (!response.ok) throw new Error("Failed to fetch user info");
+                
+                const user = await response.json();
+                document.getElementById("username").innerText = `Hello, ${user.name}`;
+            } catch (error) {
+                console.error("Error fetching user info:", error);
+                document.getElementById("username").innerText = "Hello, Guest";
+            }
+        }
+
+        async function fetchLeaderboard() {
+            try {
+                const response = await fetch('/leaderboard', { credentials: 'include' });
+                if (!response.ok) throw new Error("Failed to fetch leaderboard");
+                
+                const { data } = await response.json();
+
+                data.sort((a, b) => b.score - a.score);
+
+                const tableHeaders = `
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Score</th>
+                    </tr>
+                `;
+                const tableRows = data.map((entry, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${entry.name}</td>
+                        <td>${entry.score}</td>
+                    </tr>
+                `).join("");
+
+                const leaderboardTable = `
+                    <table>
+                        <thead>
+                            ${tableHeaders}
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                `;
+
+                document.getElementById("leaderboard").innerHTML = leaderboardTable;
+            } catch (error) {
+                console.error("Error fetching leaderboard:", error);
+                document.getElementById("leaderboard").innerText = "Failed to load leaderboard.";
+            }
+        }
+
+        window.onload = fetchUserInfo;
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Welcome to the Leaderboard</h1>
+            <p id="username">Loading user information...</p>
+        </header>
+        <main>
+            <button class="btn" onclick="fetchLeaderboard()">Show Leaderboard</button>
+            <div id="leaderboard"></div>
+        </main>
+    </div>
+</body>
+</html>
